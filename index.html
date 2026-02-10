@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auparts - Surron Parts & Accessories</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <a href="#" class="logo">auparts</a>
+            <nav class="nav">
+                <a href="#" class="nav-link">Home</a>
+                <a href="#collections" class="nav-link">Catalog</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+            <div class="header-actions">
+                <button class="icon-btn" aria-label="Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+                <button class="icon-btn" aria-label="Shopping cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <div class="hero-bg">
+            <img src="images/hero-bike.jpeg" alt="Surron Ultra Bee">
+        </div>
+        <div class="hero-content">
+            <h1>Shop our latest arrivals!</h1>
+            <p>Premium parts and accessories for your Surron</p>
+            <a href="#collections" class="btn btn-primary">Shop Now</a>
+        </div>
+    </section>
+
+    <!-- Collections -->
+    <section id="collections" class="collections">
+        <div class="section-header">
+            <h2 class="section-title">Collections</h2>
+            <a href="#" class="section-link">View all →</a>
+        </div>
+        <div class="collections-grid">
+            <a href="#ultra-bee" class="collection-card">
+                <img src="images/baja-headlight.jpeg" alt="Ultra Bee Parts" class="collection-image">
+                <div class="collection-overlay">
+                    <h3>Ultra Bee Parts</h3>
+                    <span>6 Products</span>
+                </div>
+            </a>
+            <a href="#light-bee" class="collection-card">
+                <img src="images/motor-guard.jpeg" alt="Light Bee Parts" class="collection-image">
+                <div class="collection-overlay">
+                    <h3>Light Bee Parts</h3>
+                    <span>6 Products</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Ultra Bee Parts Section -->
+    <section id="ultra-bee" class="products-section">
+        <div class="section-header">
+            <h2 class="section-title">Ultra Bee Parts</h2>
+            <a href="#" class="section-link">View all →</a>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/baja-headlight.jpeg" alt="Ultra Bee Baja Headlight">
+                    <span class="badge new">New</span>
+                </div>
+                <div class="product-info">
+                    <h3>Ultra Bee Baja Headlight Kit</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$299.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/brake-pads.jpeg" alt="Surron Ultra Bee Brake Pads">
+                    <span class="badge sale">Sale</span>
+                </div>
+                <div class="product-info">
+                    <h3>Surron Ultra Bee Sintered Brake Pads</h3>
+                    <div class="product-pricing">
+                        <span class="price price-sale">$45.00</span>
+                        <span class="price-compare">$55.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/ultra-bee-shift-lock.jpg" alt="Surron Ultra Bee Shift Lock">
+                </div>
+                <div class="product-info">
+                    <h3>Surron Ultra Bee Shift Lock</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$89.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/windscreen.jpeg" alt="Ultra Bee Windscreen">
+                    <span class="badge new">New</span>
+                </div>
+                <div class="product-info">
+                    <h3>Ultra Bee Front Windscreen</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$79.00</span>
+                    </div>
+                    <button class="btn btn-choose">Choose options</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/rear-fender.jpeg" alt="Ultra Bee Rear Fender">
+                </div>
+                <div class="product-info">
+                    <h3>Ultra Bee Rear Fender</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$65.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/ultra-bee-seat-cover.png" alt="Surron Ultra Bee Guts Seat Cover">
+                </div>
+                <div class="product-info">
+                    <h3>Surron Ultra Bee Guts Seat Cover</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$85.00</span>
+                    </div>
+                    <button class="btn btn-choose">Choose options</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Light Bee Parts Section -->
+    <section id="light-bee" class="products-section">
+        <div class="section-header">
+            <h2 class="section-title">Light Bee Parts</h2>
+            <a href="#" class="section-link">View all →</a>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/front-plate.jpeg" alt="Front Number Plate">
+                    <span class="badge sale">Sale</span>
+                </div>
+                <div class="product-info">
+                    <h3>Light Bee Front Number Plate</h3>
+                    <div class="product-pricing">
+                        <span class="price price-sale">$49.00</span>
+                        <span class="price-compare">$65.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/motor-guard.jpeg" alt="Light Bee Motor Guard">
+                    <span class="badge new">New</span>
+                </div>
+                <div class="product-info">
+                    <h3>Light Bee Motor Guard</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$119.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/passenger-peg.jpeg" alt="Light Bee Passenger Peg Kit">
+                </div>
+                <div class="product-info">
+                    <h3>Light Bee Passenger Peg Kit</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$89.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/light-bee-shift-lock.jpg" alt="Surron Light Bee Shift Lock">
+                </div>
+                <div class="product-info">
+                    <h3>Surron Light Bee Shift Lock</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$79.00</span>
+                    </div>
+                    <button class="btn btn-add">Add</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/light-bee-motor-cover.webp" alt="Surron Light Bee Motor Cover">
+                </div>
+                <div class="product-info">
+                    <h3>Surron Light Bee Motor Cover</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$119.00</span>
+                    </div>
+                    <button class="btn btn-choose">Choose options</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    <img src="images/light-bee-seat-cover.png" alt="Surron Light Bee Guts Seat Cover">
+                </div>
+                <div class="product-info">
+                    <h3>Surron Light Bee Guts Seat Cover</h3>
+                    <div class="stock-indicator">
+                        <span class="stock-dot"></span>
+                        <span>In stock</span>
+                    </div>
+                    <div class="product-pricing">
+                        <span class="price">$80.00</span>
+                    </div>
+                    <button class="btn btn-choose">Choose options</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="footer-content">
+            <div class="newsletter">
+                <h3>Subscribe to our emails</h3>
+                <p>Be the first to know about new collections and exclusive offers.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Email" required>
+                    <button type="submit" class="btn btn-primary">→</button>
+                </form>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024, auparts. Powered by Shopify</p>
+                <div class="footer-links">
+                    <a href="#">Refund policy</a>
+                    <a href="#">Privacy policy</a>
+                    <a href="#">Terms of service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
