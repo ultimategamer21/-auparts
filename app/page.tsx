@@ -1,66 +1,99 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Image from 'next/image'
+import Link from 'next/link'
+import ProductCard from '@/components/ProductCard'
+import { products, getProductsByCategory } from '@/lib/products'
 
 export default function Home() {
+  const ultraBeeProducts = getProductsByCategory('ultra-bee')
+  const lightBeeProducts = getProductsByCategory('light-bee')
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main>
+      {/* Hero Section */}
+      <section className="hero">
+        <div className="hero-bg">
+          <Image
+            src="/images/hero-bike.jpeg"
+            alt="Surron Ultra Bee"
+            fill
+            priority
+            style={{ objectFit: 'cover', objectPosition: 'center 60%', transform: 'scale(1.3)' }}
+          />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <div className="hero-content">
+          <h1>Shop our latest arrivals!</h1>
+          <p>Premium parts and accessories for your Surron</p>
+          <Link href="#collections" className="btn btn-primary">
+            Shop Now
+          </Link>
+        </div>
+      </section>
+
+      {/* Collections */}
+      <section id="collections" className="collections">
+        <div className="section-header">
+          <h2 className="section-title">Collections</h2>
+          <Link href="#" className="section-link">
+            View all →
+          </Link>
+        </div>
+        <div className="collections-grid">
+          <Link href="#ultra-bee" className="collection-card">
             <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/images/baja-headlight.jpeg"
+              alt="Ultra Bee Parts"
+              fill
+              className="collection-image"
             />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="collection-overlay">
+              <h3>Ultra Bee Parts</h3>
+              <span>{ultraBeeProducts.length} Products</span>
+            </div>
+          </Link>
+          <Link href="#light-bee" className="collection-card">
+            <Image
+              src="/images/motor-guard.jpeg"
+              alt="Light Bee Parts"
+              fill
+              className="collection-image"
+            />
+            <div className="collection-overlay">
+              <h3>Light Bee Parts</h3>
+              <span>{lightBeeProducts.length} Products</span>
+            </div>
+          </Link>
         </div>
-      </main>
-    </div>
-  );
+      </section>
+
+      {/* Ultra Bee Parts */}
+      <section id="ultra-bee" className="products-section">
+        <div className="section-header">
+          <h2 className="section-title">Ultra Bee Parts</h2>
+          <Link href="#" className="section-link">
+            View all →
+          </Link>
+        </div>
+        <div className="products-grid">
+          {ultraBeeProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      {/* Light Bee Parts */}
+      <section id="light-bee" className="products-section">
+        <div className="section-header">
+          <h2 className="section-title">Light Bee Parts</h2>
+          <Link href="#" className="section-link">
+            View all →
+          </Link>
+        </div>
+        <div className="products-grid">
+          {lightBeeProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+    </main>
+  )
 }
