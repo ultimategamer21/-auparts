@@ -1,11 +1,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import ProductCard from '@/components/ProductCard'
-import { products, getProductsByCategory } from '@/lib/products'
+import { getProductsByCategory } from '@/lib/products'
 
-export default function Home() {
-  const ultraBeeProducts = getProductsByCategory('ultra-bee')
-  const lightBeeProducts = getProductsByCategory('light-bee')
+export const revalidate = 60 // Revalidate every 60 seconds
+
+export default async function Home() {
+  const ultraBeeProducts = await getProductsByCategory('ultra-bee')
+  const lightBeeProducts = await getProductsByCategory('light-bee')
 
   return (
     <main>
@@ -33,7 +35,7 @@ export default function Home() {
       <section id="collections" className="collections">
         <div className="section-header">
           <h2 className="section-title">Collections</h2>
-          <Link href="#" className="section-link">
+          <Link href="/catalog" className="section-link">
             View all →
           </Link>
         </div>
@@ -69,7 +71,7 @@ export default function Home() {
       <section id="ultra-bee" className="products-section">
         <div className="section-header">
           <h2 className="section-title">Ultra Bee Parts</h2>
-          <Link href="#" className="section-link">
+          <Link href="/catalog?category=ultra-bee" className="section-link">
             View all →
           </Link>
         </div>
@@ -84,7 +86,7 @@ export default function Home() {
       <section id="light-bee" className="products-section">
         <div className="section-header">
           <h2 className="section-title">Light Bee Parts</h2>
-          <Link href="#" className="section-link">
+          <Link href="/catalog?category=light-bee" className="section-link">
             View all →
           </Link>
         </div>

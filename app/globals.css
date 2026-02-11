@@ -256,9 +256,13 @@ a {
 
 .btn-add {
     width: 100%;
+    min-height: 44px;
     background: var(--color-foreground);
     color: var(--color-background);
     font-weight: 500;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-top: auto;
 }
 
 .btn-add:hover {
@@ -315,6 +319,7 @@ a {
     padding: var(--gap-2xl) 0;
     max-width: var(--page-width);
     margin: 0 auto;
+    scroll-margin-top: 80px;
 }
 
 .collections-grid {
@@ -378,6 +383,7 @@ a {
     padding: var(--gap-xl) 0;
     max-width: var(--page-width);
     margin: 0 auto;
+    scroll-margin-top: 80px;
 }
 
 .products-grid {
@@ -392,6 +398,8 @@ a {
     border-radius: var(--border-radius);
     overflow: hidden;
     transition: transform var(--transition-normal);
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -451,6 +459,9 @@ a {
 /* Product Info */
 .product-info {
     padding: var(--gap-md) 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .product-info h3 {
@@ -591,6 +602,24 @@ a {
 
 .footer-links a:hover {
     color: var(--color-foreground);
+}
+
+.footer-social {
+    display: flex;
+    gap: var(--gap-md);
+}
+
+.social-link {
+    color: var(--color-foreground-secondary);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-link:hover {
+    color: var(--color-foreground);
+    transform: scale(1.1);
 }
 
 /* Cart Drawer */

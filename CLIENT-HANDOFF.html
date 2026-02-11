@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auparts - Website Handoff Documentation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+      color: #e4e4e7;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 3rem;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+    }
+
+    .live-url {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 1rem 2rem;
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.4);
+      border-radius: 12px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .live-url:hover {
+      background: rgba(102, 126, 234, 0.3);
+      transform: translateY(-2px);
+    }
+
+    section {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h2 .icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.9);
+      margin: 1.5rem 0 0.75rem 0;
+    }
+
+    p {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 1rem;
+    }
+
+    .credential-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .credential-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .credential-row:last-child {
+      border-bottom: none;
+    }
+
+    .credential-label {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.875rem;
+    }
+
+    .credential-value {
+      font-family: 'Monaco', 'Menlo', monospace;
+      background: rgba(102, 126, 234, 0.2);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      color: #a5b4fc;
+      font-size: 0.9rem;
+    }
+
+    .credential-value a {
+      color: #a5b4fc;
+      text-decoration: none;
+    }
+
+    .credential-value a:hover {
+      text-decoration: underline;
+    }
+
+    ul, ol {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.5rem;
+    }
+
+    .code-block {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .checklist input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #667eea;
+    }
+
+    .env-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .env-table th,
+    .env-table td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .env-table th {
+      color: rgba(255,255,255,0.5);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .env-table td:first-child {
+      font-family: 'Monaco', 'Menlo', monospace;
+      color: #a5b4fc;
+      font-size: 0.85rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-warning {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .badge-success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .tip {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 3px solid #22c55e;
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+    }
+
+    .tip-title {
+      color: #22c55e;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .warning {
+      background: rgba(251, 191, 36, 0.1);
+      border-left: 3px solid #fbbf24;
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+    }
+
+    .warning-title {
+      color: #fbbf24;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.875rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 1rem;
+      }
+
+      section {
+        padding: 1.5rem;
+      }
+
+      .credential-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .env-table {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">AUPARTS</div>
+      <p>Website Handoff Documentation</p>
+      <a href="https://auparts.vercel.app" target="_blank" class="live-url">
+        View Live Website
+      </a>
+    </header>
+
+    <section>
+      <h2><span class="icon">🔐</span> Admin Dashboard</h2>
+      <p>Manage your products, update prices, and control inventory from the admin panel.</p>
+
+      <div class="credential-box">
+        <div class="credential-row">
+          <span class="credential-label">URL</span>
+          <span class="credential-value"><a href="https://auparts.vercel.app/admin" target="_blank">auparts.vercel.app/admin</a></span>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Password</span>
+          <span class="credential-value">auparts2026</span>
+        </div>
+      </div>
+
+      <h3>What you can do:</h3>
+      <ul>
+        <li>Add new products with images</li>
+        <li>Edit product details (name, price, description, category)</li>
+        <li>Mark products as in stock or out of stock</li>
+        <li>Delete products</li>
+        <li>Upload product images</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="icon">💳</span> Stripe - Payments & Orders</h2>
+      <p>All orders and payments are managed through Stripe. This is your central hub for order management.</p>
+
+      <div class="credential-box">
+        <div class="credential-row">
+          <span class="credential-label">Dashboard</span>
+          <span class="credential-value"><a href="https://dashboard.stripe.com" target="_blank">dashboard.stripe.com</a></span>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Status</span>
+          <span class="badge badge-warning">Test Mode</span>
+        </div>
+      </div>
+
+      <h3>Viewing Orders</h3>
+      <ol>
+        <li>Log in to Stripe Dashboard</li>
+        <li>Go to <strong>Payments</strong> in the sidebar</li>
+        <li>Click any payment to see full details:
+          <ul>
+            <li>Customer email</li>
+            <li>Shipping address</li>
+            <li>Items purchased</li>
+            <li>Payment status</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="tip">
+        <div class="tip-title">Enable Email Receipts</div>
+        <p>Go to Stripe Dashboard → <strong>Settings</strong> → <strong>Emails</strong> → Turn on <strong>"Successful payments"</strong>. Customers will automatically receive order confirmations.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🚀</span> Vercel - Website Hosting</h2>
+      <p>Your website is hosted on Vercel. Use this dashboard to monitor the site and update settings.</p>
+
+      <div class="credential-box">
+        <div class="credential-row">
+          <span class="credential-label">Dashboard</span>
+          <span class="credential-value"><a href="https://vercel.com" target="_blank">vercel.com</a></span>
+        </div>
+      </div>
+
+      <h3>Environment Variables</h3>
+      <p>These are the secret keys that connect your website to Stripe and the database:</p>
+
+      <table class="env-table">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>STRIPE_SECRET_KEY</td>
+            <td>Stripe API key (payments)</td>
+          </tr>
+          <tr>
+            <td>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</td>
+            <td>Stripe public key</td>
+          </tr>
+          <tr>
+            <td>NEXT_PUBLIC_SUPABASE_URL</td>
+            <td>Database URL</td>
+          </tr>
+          <tr>
+            <td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td>
+            <td>Database public key</td>
+          </tr>
+          <tr>
+            <td>SUPABASE_SERVICE_ROLE_KEY</td>
+            <td>Database admin key</td>
+          </tr>
+          <tr>
+            <td>ADMIN_PASSWORD</td>
+            <td>Admin dashboard password</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2><span class="icon">🗄️</span> Supabase - Database</h2>
+      <p>Product data and uploaded images are stored in Supabase.</p>
+
+      <div class="credential-box">
+        <div class="credential-row">
+          <span class="credential-label">Dashboard</span>
+          <span class="credential-value"><a href="https://supabase.com/dashboard" target="_blank">supabase.com/dashboard</a></span>
+        </div>
+      </div>
+
+      <h3>What's stored here:</h3>
+      <ul>
+        <li><strong>Table Editor → products</strong> - All product information</li>
+        <li><strong>Storage → products</strong> - Uploaded product images</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="icon">📦</span> Shipping Settings</h2>
+      <p>Current shipping configuration:</p>
+
+      <div class="credential-box">
+        <div class="credential-row">
+          <span class="credential-label">Flat Rate</span>
+          <span class="credential-value">$10 AUD</span>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Free Shipping</span>
+          <span class="credential-value">Orders over $100 AUD</span>
+        </div>
+      </div>
+
+      <p>To change these values, edit <code>app/api/checkout/route.ts</code>:</p>
+      <div class="code-block">
+const SHIPPING_RATE = 1000 // $10 in cents<br>
+const FREE_SHIPPING_THRESHOLD = 10000 // $100 in cents
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🔑</span> Getting Live API Keys</h2>
+      <p>To accept real payments, you need to get your live Stripe API keys and send them to your developer.</p>
+
+      <h3>Step 1: Activate Your Stripe Account</h3>
+      <ol>
+        <li>Go to <a href="https://dashboard.stripe.com" style="color: #a5b4fc;">dashboard.stripe.com</a></li>
+        <li>Click <strong>"Activate your account"</strong> or complete the onboarding</li>
+        <li>Fill in your business details, bank account, and tax information</li>
+        <li>Wait for Stripe to verify your account (usually instant)</li>
+      </ol>
+
+      <h3>Step 2: Get Your Live API Keys</h3>
+      <ol>
+        <li>In Stripe Dashboard, make sure <strong>"Test mode"</strong> toggle is <strong>OFF</strong> (top right)</li>
+        <li>Go to <strong>Developers</strong> → <strong>API keys</strong></li>
+        <li>You'll see two keys:
+          <ul>
+            <li><strong>Publishable key</strong> - starts with <code>pk_live_</code></li>
+            <li><strong>Secret key</strong> - starts with <code>sk_live_</code> (click "Reveal" to see it)</li>
+          </ul>
+        </li>
+        <li>Copy both keys</li>
+      </ol>
+
+      <h3>Step 3: Send Keys to Developer</h3>
+      <div class="warning">
+        <div class="warning-title">Security Warning</div>
+        <p>Never send API keys via regular email or text. Use one of these secure methods:</p>
+      </div>
+
+      <ul>
+        <li><strong>Option 1:</strong> Use <a href="https://onetimesecret.com" style="color: #a5b4fc;">onetimesecret.com</a> - paste keys, get a link that expires after one view</li>
+        <li><strong>Option 2:</strong> Use a password manager's secure sharing feature</li>
+        <li><strong>Option 3:</strong> Share via encrypted messaging (Signal, WhatsApp)</li>
+      </ul>
+
+      <div class="credential-box">
+        <p style="margin-bottom: 0.75rem; color: rgba(255,255,255,0.7);">Send these two keys to your developer:</p>
+        <div class="credential-row">
+          <span class="credential-label">Publishable Key</span>
+          <span class="credential-value">pk_live_xxxxxxxxxxxxx</span>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Secret Key</span>
+          <span class="credential-value">sk_live_xxxxxxxxxxxxx</span>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-title">What happens next?</div>
+        <p>Once your developer receives the keys, they'll update the website and it will start accepting real payments within minutes.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">✅</span> Going Live Checklist</h2>
+      <p>Complete these steps before accepting real payments:</p>
+
+      <ul class="checklist">
+        <li>
+          <input type="checkbox" id="c1">
+          <label for="c1">Switch Stripe from test mode to live mode</label>
+        </li>
+        <li>
+          <input type="checkbox" id="c2">
+          <label for="c2">Update Stripe API keys in Vercel with live keys</label>
+        </li>
+        <li>
+          <input type="checkbox" id="c3">
+          <label for="c3">Enable email receipts in Stripe settings</label>
+        </li>
+        <li>
+          <input type="checkbox" id="c4">
+          <label for="c4">Test a real purchase with a small amount</label>
+        </li>
+        <li>
+          <input type="checkbox" id="c5">
+          <label for="c5">Verify shipping address collection works</label>
+        </li>
+      </ul>
+
+      <div class="warning">
+        <div class="warning-title">Important</div>
+        <p>The site is currently in <strong>test mode</strong>. No real payments will be processed until you switch to live Stripe keys.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🆘</span> Support</h2>
+      <ul>
+        <li><strong>Website issues</strong> - Contact the developer</li>
+        <li><strong>Payment issues</strong> - Use Stripe Dashboard or contact <a href="https://support.stripe.com" style="color: #a5b4fc;">Stripe Support</a></li>
+        <li><strong>Database issues</strong> - Check <a href="https://supabase.com/docs" style="color: #a5b4fc;">Supabase Documentation</a></li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Auparts Website Documentation • Generated February 2026</p>
+    </footer>
+  </div>
+</body>
+</html>

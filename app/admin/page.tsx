@@ -1,0 +1,508 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+type Product = {
+  id: string
+  name: string
+  slug: string
+  description: string
+  price: number
+  compare_price: number | null
+  image: string
+  category: 'ultra-bee' | 'light-bee'
+  in_stock: boolean
+  badge: 'new' | 'sale' | null
+}
+
+const emptyProduct = {
+  name: '',
+  slug: '',
+  description: '',
+  price: 0,
+  compare_price: null as number | null,
+  image: '',
+  category: 'ultra-bee' as const,
+  in_stock: true,
+  badge: null as 'new' | 'sale' | null,
+}
+
+export default function AdminDashboard() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState<Product | null>(null)
+  const [isNew, setIsNew] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    const res = await fetch('/api/admin/products')
+    if (res.ok) {
+      const data = await res.json()
+      setProducts(data)
+    }
+    setLoading(false)
+  }
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+  }
+
+  const handleSave = async () => {
+    if (!editing) return
+    setSaving(true)
+
+    // Convert dollars back to cents for saving
+    const productData = {
+      ...editing,
+      price: Math.round(editing.price * 100),
+      compare_price: editing.compare_price ? Math.round(editing.compare_price * 100) : null,
+    }
+
+    const url = isNew
+      ? '/api/admin/products'
+      : `/api/admin/products/${editing.id}`
+
+    const res = await fetch(url, {
+      method: isNew ? 'POST' : 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(productData),
+    })
+
+    if (res.ok) {
+      await fetchProducts()
+      setEditing(null)
+      setIsNew(false)
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to save product')
+    }
+    setSaving(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return
+
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      await fetchProducts()
+    } else {
+      alert('Failed to delete product')
+    }
+  }
+
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editing) return
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (res.ok) {
+        const { url } = await res.json()
+        setEditing({ ...editing, image: url })
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to upload image')
+      }
+    } catch {
+      alert('Failed to upload image')
+    }
+    setUploading(false)
+  }
+
+  const getImageSrc = (image: string) => {
+    if (!image) return ''
+    if (image.startsWith('http')) return image
+    return `/images/${image}`
+  }
+
+  // Calculate stats
+  const stats = {
+    total: products.length,
+    inStock: products.filter(p => p.in_stock).length,
+    outOfStock: products.filter(p => !p.in_stock).length,
+    ultraBee: products.filter(p => p.category === 'ultra-bee').length,
+    lightBee: products.filter(p => p.category === 'light-bee').length,
+    onSale: products.filter(p => p.badge === 'sale').length,
+    newItems: products.filter(p => p.badge === 'new').length,
+  }
+
+  if (loading) {
+    return (
+      <main style={{ padding: '6rem 2rem 2rem', textAlign: 'center' }}>
+        Loading...
+      </main>
+    )
+  }
+
+  return (
+    <main style={{ padding: '6rem 2rem 2rem', maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+      {/* Dashboard Stats */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: '1rem',
+        marginBottom: '2rem',
+      }}>
+        <div style={statCardStyle}>
+          <div style={statNumberStyle}>{stats.total}</div>
+          <div style={statLabelStyle}>Total Products</div>
+        </div>
+        <div style={{ ...statCardStyle, borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+          <div style={{ ...statNumberStyle, color: '#22c55e' }}>{stats.inStock}</div>
+          <div style={statLabelStyle}>In Stock</div>
+        </div>
+        <div style={{ ...statCardStyle, borderColor: stats.outOfStock > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255,255,255,0.1)' }}>
+          <div style={{ ...statNumberStyle, color: stats.outOfStock > 0 ? '#ef4444' : 'white' }}>{stats.outOfStock}</div>
+          <div style={statLabelStyle}>Out of Stock</div>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statNumberStyle}>{stats.ultraBee}</div>
+          <div style={statLabelStyle}>Ultra Bee</div>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statNumberStyle}>{stats.lightBee}</div>
+          <div style={statLabelStyle}>Light Bee</div>
+        </div>
+        <div style={{ ...statCardStyle, borderColor: 'rgba(251, 191, 36, 0.3)' }}>
+          <div style={{ ...statNumberStyle, color: '#fbbf24' }}>{stats.onSale}</div>
+          <div style={statLabelStyle}>On Sale</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h1>Product Management</h1>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setEditing(emptyProduct as Product)
+              setIsNew(true)
+            }}
+          >
+            + Add Product
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Product List */}
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '80px 1fr auto auto auto',
+              gap: '1rem',
+              alignItems: 'center',
+              padding: '1rem',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '8px',
+            }}
+          >
+            <div style={{ width: '80px', height: '80px', position: 'relative', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+              {product.image && (
+                <Image
+                  src={getImageSrc(product.image)}
+                  alt={product.name}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  unoptimized={product.image.startsWith('http')}
+                />
+              )}
+            </div>
+            <div>
+              <h3 style={{ margin: 0 }}>{product.name}</h3>
+              <p style={{ margin: '0.25rem 0 0', color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem' }}>
+                {product.category} {product.badge && `• ${product.badge}`} {!product.in_stock && '• Out of stock'}
+              </p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontWeight: 'bold' }}>{formatPrice(product.price)}</div>
+              {product.compare_price && (
+                <div style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through', fontSize: '0.875rem' }}>
+                  {formatPrice(product.compare_price)}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                // Convert cents to dollars for editing
+                setEditing({
+                  ...product,
+                  price: product.price / 100,
+                  compare_price: product.compare_price ? product.compare_price / 100 : null,
+                })
+                setIsNew(false)
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                color: 'white',
+                cursor: 'pointer',
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(product.id)}
+              style={{
+                background: 'rgba(255,100,100,0.2)',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                color: '#ff6b6b',
+                cursor: 'pointer',
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {products.length === 0 && (
+        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: '3rem' }}>
+          No products yet. Click &quot;Add Product&quot; to create one.
+        </p>
+      )}
+
+      {/* Edit Modal */}
+      {editing && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            zIndex: 1000,
+          }}
+          onClick={() => { setEditing(null); setIsNew(false) }}
+        >
+          <div
+            style={{
+              background: '#111',
+              borderRadius: '12px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '500px',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0 }}>{isNew ? 'Add Product' : 'Edit Product'}</h2>
+
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Name</label>
+                <input
+                  type="text"
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Description</label>
+                <textarea
+                  value={editing.description}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                  rows={3}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Price ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editing.price}
+                    onChange={(e) => setEditing({ ...editing, price: parseFloat(e.target.value) || 0 })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Compare Price ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editing.compare_price || ''}
+                    onChange={(e) => setEditing({ ...editing, compare_price: e.target.value ? parseFloat(e.target.value) : null })}
+                    placeholder="Optional"
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Image</label>
+                {editing.image && (
+                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden' }}>
+                    <Image
+                      src={getImageSrc(editing.image)}
+                      alt="Product"
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized={editing.image.startsWith('http')}
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                />
+                {uploading && <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)' }}>Uploading...</p>}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Category</label>
+                  <select
+                    value={editing.category}
+                    onChange={(e) => setEditing({ ...editing, category: e.target.value as 'ultra-bee' | 'light-bee' })}
+                    style={inputStyle}
+                  >
+                    <option value="ultra-bee">Ultra Bee</option>
+                    <option value="light-bee">Light Bee</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Badge</label>
+                  <select
+                    value={editing.badge || ''}
+                    onChange={(e) => setEditing({ ...editing, badge: e.target.value as 'new' | 'sale' | null || null })}
+                    style={inputStyle}
+                  >
+                    <option value="">None</option>
+                    <option value="new">New</option>
+                    <option value="sale">Sale</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.in_stock}
+                    onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })}
+                  />
+                  In Stock
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{ flex: 1 }}
+                >
+                  {saving ? 'Saving...' : 'Save Product'}
+                </button>
+                <button
+                  onClick={() => { setEditing(null); setIsNew(false) }}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '0.75rem 1rem',
+  background: 'rgba(255,255,255,0.1)',
+  border: '1px solid rgba(255,255,255,0.2)',
+  borderRadius: '8px',
+  color: 'white',
+  fontSize: '1rem',
+}
+
+const statCardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '12px',
+  padding: '1.25rem',
+  textAlign: 'center',
+}
+
+const statNumberStyle: React.CSSProperties = {
+  fontSize: '2rem',
+  fontWeight: 'bold',
+  marginBottom: '0.25rem',
+}
+
+const statLabelStyle: React.CSSProperties = {
+  fontSize: '0.875rem',
+  color: 'rgba(255,255,255,0.6)',
+}

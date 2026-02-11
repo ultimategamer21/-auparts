@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Product } from '@/lib/supabase'
 import { useCart } from './CartProvider'
 
@@ -9,25 +10,43 @@ function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+function getImageSrc(image: string): string {
+  if (!image) return '/images/placeholder.jpeg'
+  if (image.startsWith('http')) return image
+  return `/images/${image}`
+}
+
+function getFirstImage(imageField: string): string {
+  if (!imageField) return ''
+  // Get first image if comma-separated
+  const firstImage = imageField.split(',')[0].trim()
+  return firstImage
+}
+
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
 
-  const handleAdd = () => {
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     addItem(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
   }
 
+  const imageSrc = getImageSrc(getFirstImage(product.image))
+
   return (
-    <div className="product-card">
+    <Link href={`/products/${product.slug}`} className="product-card">
       <div className="product-image-wrapper">
         <Image
-          src={`/images/${product.image}`}
+          src={imageSrc}
           alt={product.name}
           width={300}
           height={300}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          unoptimized={imageSrc.startsWith('http')}
         />
         {product.badge && (
           <span className={`badge ${product.badge}`}>{product.badge}</span>
@@ -58,6 +77,6 @@ export default function ProductCard({ product }: { product: Product }) {
           {added ? 'Added!' : 'Add'}
         </button>
       </div>
-    </div>
+    </Link>
   )
 }

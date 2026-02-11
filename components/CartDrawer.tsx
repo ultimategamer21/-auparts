@@ -7,6 +7,12 @@ function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+function getImageSrc(image: string): string {
+  if (!image) return '/images/placeholder.jpeg'
+  if (image.startsWith('http')) return image
+  return `/images/${image}`
+}
+
 export default function CartDrawer() {
   const {
     items,
@@ -27,9 +33,11 @@ export default function CartDrawer() {
         body: JSON.stringify({ items }),
       })
 
-      const { url } = await response.json()
+      const { url, error } = await response.json()
       if (url) {
         window.location.href = url
+      } else {
+        alert(error || 'Something went wrong. Please try again.')
       }
     } catch (error) {
       console.error('Checkout error:', error)
@@ -73,11 +81,12 @@ export default function CartDrawer() {
             items.map((item) => (
               <div key={item.product.id} className="cart-item">
                 <Image
-                  src={`/images/${item.product.image}`}
+                  src={getImageSrc(item.product.image)}
                   alt={item.product.name}
                   width={80}
                   height={80}
                   className="cart-item-image"
+                  unoptimized={item.product.image?.startsWith('http')}
                 />
                 <div className="cart-item-details">
                   <div className="cart-item-name">{item.product.name}</div>
