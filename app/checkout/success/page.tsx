@@ -30,7 +30,7 @@ export default function CheckoutSuccess() {
           You&apos;ll receive an email confirmation shortly.
         </p>
         <a
-          href="https://auparts.vercel.app"
+          href="/"
           className="btn btn-primary"
           style={{
             display: 'inline-block',
