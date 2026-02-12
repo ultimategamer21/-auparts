@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CartItem } from '@/components/CartProvider'
 
-const SHIPPING_RATE = 1000 // $10 in cents
+const SHIPPING_RATE = 0 // Temporarily disabled
 const FREE_SHIPPING_THRESHOLD = 10000 // $100 in cents
 
 async function stripeRequest(endpoint: string, body: Record<string, unknown>) {

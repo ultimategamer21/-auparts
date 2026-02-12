@@ -24,7 +24,7 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-const SHIPPING_RATE = 1000 // $10 in cents
+const SHIPPING_RATE = 0 // Temporarily disabled
 const FREE_SHIPPING_THRESHOLD = 10000 // $100 in cents
 
 export function CartProvider({ children }: { children: ReactNode }) {
