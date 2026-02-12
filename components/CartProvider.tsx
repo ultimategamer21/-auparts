@@ -24,15 +24,14 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-const SHIPPING_RATE = 0 // Temporarily disabled
-const FREE_SHIPPING_THRESHOLD = 10000 // $100 in cents
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [shippingRate, setShippingRate] = useState(0)
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(10000)
 
-  // Load cart from localStorage
+  // Load cart from localStorage and fetch shipping settings
   useEffect(() => {
     const savedCart = localStorage.getItem('auparts-cart')
     if (savedCart) {
@@ -43,6 +42,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
     setIsLoaded(true)
+
+    // Fetch shipping settings
+    fetch('/api/settings/shipping')
+      .then(res => res.json())
+      .then(data => {
+        setShippingRate(data.shipping_rate || 0)
+        setFreeShippingThreshold(data.free_shipping_threshold || 10000)
+      })
+      .catch(() => {
+        // Use defaults on error
+      })
   }, [])
 
   // Save cart to localStorage
@@ -92,7 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   )
 
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE
+  const shipping = subtotal >= freeShippingThreshold ? 0 : shippingRate
   const total = subtotal + shipping
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 

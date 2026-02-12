@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CartItem } from '@/components/CartProvider'
+import { createClient } from '@supabase/supabase-js'
 
-const SHIPPING_RATE = 0 // Temporarily disabled
-const FREE_SHIPPING_THRESHOLD = 10000 // $100 in cents
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+async function getShippingSettings() {
+  try {
+    const { data, error } = await supabase
+      .from('settings')
+      .select('*')
+      .eq('key', 'shipping')
+      .single()
+
+    if (error || !data) {
+      return { shipping_rate: 1000, free_shipping_threshold: 10000 }
+    }
+    return data.value
+  } catch {
+    return { shipping_rate: 1000, free_shipping_threshold: 10000 }
+  }
+}
 
 async function stripeRequest(endpoint: string, body: Record<string, unknown>) {
   const response = await fetch(`https://api.stripe.com/v1/${endpoint}`, {
@@ -51,6 +71,11 @@ export async function POST(request: NextRequest) {
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'No items in cart' }, { status: 400 })
     }
+
+    // Get dynamic shipping settings
+    const shippingSettings = await getShippingSettings()
+    const SHIPPING_RATE = shippingSettings.shipping_rate
+    const FREE_SHIPPING_THRESHOLD = shippingSettings.free_shipping_threshold
 
     const subtotal = items.reduce(
       (sum, item) => sum + item.product.price * item.quantity,

@@ -12,7 +12,7 @@ type Product = {
   price: number
   compare_price: number | null
   image: string
-  category: 'ultra-bee' | 'light-bee'
+  category: 'ultra-bee' | 'light-bee' | 'fat-tire'
   in_stock: boolean
   badge: 'new' | 'sale' | null
 }
@@ -29,6 +29,11 @@ const emptyProduct = {
   badge: null as 'new' | 'sale' | null,
 }
 
+type ShippingSettings = {
+  shipping_rate: number
+  free_shipping_threshold: number
+}
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,10 +41,16 @@ export default function AdminDashboard() {
   const [isNew, setIsNew] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
+    shipping_rate: 1000,
+    free_shipping_threshold: 10000,
+  })
+  const [savingShipping, setSavingShipping] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     fetchProducts()
+    fetchShippingSettings()
   }, [])
 
   const fetchProducts = async () => {
@@ -49,6 +60,29 @@ export default function AdminDashboard() {
       setProducts(data)
     }
     setLoading(false)
+  }
+
+  const fetchShippingSettings = async () => {
+    const res = await fetch('/api/admin/settings')
+    if (res.ok) {
+      const data = await res.json()
+      setShippingSettings(data)
+    }
+  }
+
+  const saveShippingSettings = async () => {
+    setSavingShipping(true)
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(shippingSettings),
+    })
+    if (res.ok) {
+      alert('Shipping settings saved!')
+    } else {
+      alert('Failed to save shipping settings')
+    }
+    setSavingShipping(false)
   }
 
   const handleLogout = async () => {
@@ -191,6 +225,62 @@ export default function AdminDashboard() {
           <div style={{ ...statNumberStyle, color: '#fbbf24' }}>{stats.onSale}</div>
           <div style={statLabelStyle}>On Sale</div>
         </div>
+      </div>
+
+      {/* Shipping Settings */}
+      <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+      }}>
+        <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem' }}>Shipping Settings</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+              Shipping Rate ($)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={shippingSettings.shipping_rate / 100}
+              onChange={(e) => setShippingSettings({
+                ...shippingSettings,
+                shipping_rate: Math.round(parseFloat(e.target.value || '0') * 100)
+              })}
+              style={inputStyle}
+              placeholder="e.g. 10.00"
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+              Free Shipping Over ($)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={shippingSettings.free_shipping_threshold / 100}
+              onChange={(e) => setShippingSettings({
+                ...shippingSettings,
+                free_shipping_threshold: Math.round(parseFloat(e.target.value || '0') * 100)
+              })}
+              style={inputStyle}
+              placeholder="e.g. 100.00"
+            />
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={saveShippingSettings}
+            disabled={savingShipping}
+            style={{ height: '44px' }}
+          >
+            {savingShipping ? 'Saving...' : 'Save Shipping'}
+          </button>
+        </div>
+        <p style={{ margin: '1rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>
+          Set shipping rate to $0 to disable shipping charges. Orders over the threshold get free shipping.
+        </p>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -415,9 +505,10 @@ export default function AdminDashboard() {
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Category</label>
                   <select
                     value={editing.category}
-                    onChange={(e) => setEditing({ ...editing, category: e.target.value as 'ultra-bee' | 'light-bee' })}
+                    onChange={(e) => setEditing({ ...editing, category: e.target.value as 'ultra-bee' | 'light-bee' | 'fat-tire' })}
                     style={inputStyle}
                   >
+                    <option value="fat-tire">Fat Tire</option>
                     <option value="ultra-bee">Ultra Bee</option>
                     <option value="light-bee">Light Bee</option>
                   </select>
