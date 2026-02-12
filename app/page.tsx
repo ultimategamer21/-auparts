@@ -43,7 +43,7 @@ export default async function Home() {
         <div className="collections-grid three-col">
           <Link href="/catalog?category=fat-tire" className="collection-card">
             <Image
-              src="/images/fatboy-baja-headlight-1.jpeg"
+              src="/images/fat-tire-collection.jpeg"
               alt="Fat Tire Parts"
               fill
               className="collection-image"
@@ -55,7 +55,7 @@ export default async function Home() {
           </Link>
           <Link href="/catalog?category=ultra-bee" className="collection-card">
             <Image
-              src="/images/baja-headlight.jpeg"
+              src="/images/ultra-bee-collection.jpeg"
               alt="Ultra Bee Parts"
               fill
               className="collection-image"
@@ -67,7 +67,7 @@ export default async function Home() {
           </Link>
           <Link href="/catalog?category=light-bee" className="collection-card">
             <Image
-              src="/images/motor-guard.jpeg"
+              src="/images/light-bee-collection.jpeg"
               alt="Light Bee Parts"
               fill
               className="collection-image"

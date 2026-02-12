@@ -347,7 +347,7 @@ a {
 
 .collection-card {
     position: relative;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 3 / 4;
     border-radius: var(--border-radius);
     overflow: hidden;
     display: block;
