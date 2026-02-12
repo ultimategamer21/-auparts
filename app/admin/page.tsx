@@ -244,10 +244,10 @@ export default function AdminDashboard() {
             <input
               type="number"
               step="0.01"
-              value={shippingSettings.shipping_rate / 100}
+              value={shippingSettings.shipping_rate === 0 ? '' : shippingSettings.shipping_rate / 100}
               onChange={(e) => setShippingSettings({
                 ...shippingSettings,
-                shipping_rate: Math.round(parseFloat(e.target.value || '0') * 100)
+                shipping_rate: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0
               })}
               style={inputStyle}
               placeholder="e.g. 10.00"
@@ -260,10 +260,10 @@ export default function AdminDashboard() {
             <input
               type="number"
               step="0.01"
-              value={shippingSettings.free_shipping_threshold / 100}
+              value={shippingSettings.free_shipping_threshold === 0 ? '' : shippingSettings.free_shipping_threshold / 100}
               onChange={(e) => setShippingSettings({
                 ...shippingSettings,
-                free_shipping_threshold: Math.round(parseFloat(e.target.value || '0') * 100)
+                free_shipping_threshold: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0
               })}
               style={inputStyle}
               placeholder="e.g. 100.00"
