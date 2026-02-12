@@ -34,13 +34,32 @@ type ShippingSettings = {
   free_shipping_threshold: number
 }
 
+type Collection = {
+  id: string
+  name: string
+  slug: string
+  image: string
+  sort_order: number
+}
+
+const emptyCollection = {
+  name: '',
+  slug: '',
+  image: '',
+  sort_order: 0,
+}
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([])
+  const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | null>(null)
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null)
   const [isNew, setIsNew] = useState(false)
+  const [isNewCollection, setIsNewCollection] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingCollection, setUploadingCollection] = useState(false)
   const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
     shipping_rate: 1000,
     free_shipping_threshold: 10000,
@@ -50,6 +69,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchProducts()
+    fetchCollections()
     fetchShippingSettings()
   }, [])
 
@@ -60,6 +80,80 @@ export default function AdminDashboard() {
       setProducts(data)
     }
     setLoading(false)
+  }
+
+  const fetchCollections = async () => {
+    const res = await fetch('/api/admin/collections')
+    if (res.ok) {
+      const data = await res.json()
+      setCollections(data)
+    }
+  }
+
+  const handleSaveCollection = async () => {
+    if (!editingCollection) return
+    setSaving(true)
+
+    const url = isNewCollection
+      ? '/api/admin/collections'
+      : `/api/admin/collections/${editingCollection.id}`
+
+    const res = await fetch(url, {
+      method: isNewCollection ? 'POST' : 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editingCollection),
+    })
+
+    if (res.ok) {
+      await fetchCollections()
+      setEditingCollection(null)
+      setIsNewCollection(false)
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to save collection')
+    }
+    setSaving(false)
+  }
+
+  const handleDeleteCollection = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this collection?')) return
+
+    const res = await fetch(`/api/admin/collections/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      await fetchCollections()
+    } else {
+      alert('Failed to delete collection')
+    }
+  }
+
+  const handleCollectionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editingCollection) return
+
+    setUploadingCollection(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (res.ok) {
+        const { url } = await res.json()
+        setEditingCollection({ ...editingCollection, image: url })
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to upload image')
+      }
+    } catch {
+      alert('Failed to upload image')
+    }
+    setUploadingCollection(false)
   }
 
   const fetchShippingSettings = async () => {
@@ -281,6 +375,97 @@ export default function AdminDashboard() {
         <p style={{ margin: '1rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>
           Set shipping rate to $0 to disable shipping charges. Orders over the threshold get free shipping.
         </p>
+      </div>
+
+      {/* Collections Management */}
+      <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Collections</h2>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setEditingCollection(emptyCollection as Collection)
+              setIsNewCollection(true)
+            }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+          >
+            + Add Collection
+          </button>
+        </div>
+        <div style={{ display: 'grid', gap: '0.75rem' }}>
+          {collections.map((collection) => (
+            <div
+              key={collection.id}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '60px 1fr auto auto',
+                gap: '1rem',
+                alignItems: 'center',
+                padding: '0.75rem',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '8px',
+              }}
+            >
+              <div style={{ width: '60px', height: '60px', position: 'relative', borderRadius: '6px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                {collection.image && (
+                  <Image
+                    src={getImageSrc(collection.image)}
+                    alt={collection.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    unoptimized={collection.image.startsWith('http')}
+                  />
+                )}
+              </div>
+              <div>
+                <h4 style={{ margin: 0 }}>{collection.name}</h4>
+                <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>/{collection.slug}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingCollection(collection)
+                  setIsNewCollection(false)
+                }}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteCollection(collection.id)}
+                style={{
+                  background: 'rgba(255,100,100,0.2)',
+                  border: 'none',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  color: '#ff6b6b',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+          {collections.length === 0 && (
+            <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '1rem' }}>
+              No collections yet. Click &quot;Add Collection&quot; to create one.
+            </p>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -549,6 +734,130 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => { setEditing(null); setIsNew(false) }}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Collection Edit Modal */}
+      {editingCollection && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            zIndex: 1000,
+          }}
+          onClick={() => { setEditingCollection(null); setIsNewCollection(false) }}
+        >
+          <div
+            style={{
+              background: '#111',
+              borderRadius: '12px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '450px',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0 }}>{isNewCollection ? 'Add Collection' : 'Edit Collection'}</h2>
+
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Name</label>
+                <input
+                  type="text"
+                  value={editingCollection.name}
+                  onChange={(e) => setEditingCollection({ ...editingCollection, name: e.target.value })}
+                  placeholder="e.g. Fat Tire Parts"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Slug (URL)</label>
+                <input
+                  type="text"
+                  value={editingCollection.slug}
+                  onChange={(e) => setEditingCollection({ ...editingCollection, slug: e.target.value })}
+                  placeholder="e.g. fat-tire (auto-generated if empty)"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Sort Order</label>
+                <input
+                  type="number"
+                  value={editingCollection.sort_order}
+                  onChange={(e) => setEditingCollection({ ...editingCollection, sort_order: parseInt(e.target.value) || 0 })}
+                  style={inputStyle}
+                />
+                <p style={{ margin: '0.25rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>
+                  Lower numbers appear first
+                </p>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Image</label>
+                {editingCollection.image && (
+                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden' }}>
+                    <Image
+                      src={getImageSrc(editingCollection.image)}
+                      alt="Collection"
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized={editingCollection.image.startsWith('http')}
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCollectionImageUpload}
+                  disabled={uploadingCollection}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                />
+                {uploadingCollection && <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)' }}>Uploading...</p>}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveCollection}
+                  disabled={saving}
+                  style={{ flex: 1 }}
+                >
+                  {saving ? 'Saving...' : 'Save Collection'}
+                </button>
+                <button
+                  onClick={() => { setEditingCollection(null); setIsNewCollection(false) }}
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: 'none',
