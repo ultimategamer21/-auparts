@@ -16,10 +16,13 @@ export default async function CatalogPage({
 
   if (category === 'ultra-bee') {
     products = await getProductsByCategory('ultra-bee')
-    title = 'Ultra Bee Parts'
+    title = 'Surron Ultra Bee'
   } else if (category === 'light-bee') {
     products = await getProductsByCategory('light-bee')
-    title = 'Light Bee Parts'
+    title = 'Surron Light Bee'
+  } else if (category === 'fat-tire') {
+    products = await getProductsByCategory('fat-tire')
+    title = 'Fat Tire'
   } else {
     products = await getProducts()
   }
@@ -59,7 +62,21 @@ export default async function CatalogPage({
             display: 'flex',
             gap: '1rem',
             marginBottom: '2rem',
+            flexWrap: 'wrap',
           }}>
+            <a
+              href="/catalog?category=fat-tire"
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                textDecoration: 'none',
+              }}
+            >
+              Fat Tire
+            </a>
             <a
               href="/catalog?category=ultra-bee"
               style={{
@@ -71,7 +88,7 @@ export default async function CatalogPage({
                 textDecoration: 'none',
               }}
             >
-              Ultra Bee
+              Surron Ultra Bee
             </a>
             <a
               href="/catalog?category=light-bee"
@@ -84,7 +101,7 @@ export default async function CatalogPage({
                 textDecoration: 'none',
               }}
             >
-              Light Bee
+              Surron Light Bee
             </a>
           </div>
         )}

@@ -8,6 +8,7 @@ export const revalidate = 60 // Revalidate every 60 seconds
 export default async function Home() {
   const ultraBeeProducts = await getProductsByCategory('ultra-bee')
   const lightBeeProducts = await getProductsByCategory('light-bee')
+  const fatTireProducts = await getProductsByCategory('fat-tire')
 
   return (
     <main>
@@ -39,8 +40,20 @@ export default async function Home() {
             View all →
           </Link>
         </div>
-        <div className="collections-grid">
-          <Link href="#ultra-bee" className="collection-card">
+        <div className="collections-grid three-col">
+          <Link href="/catalog?category=fat-tire" className="collection-card">
+            <Image
+              src="/images/fatboy-baja-headlight-1.jpeg"
+              alt="Fat Tire Parts"
+              fill
+              className="collection-image"
+            />
+            <div className="collection-overlay">
+              <h3>Fat Tire Parts</h3>
+              <span>{fatTireProducts.length} Products</span>
+            </div>
+          </Link>
+          <Link href="/catalog?category=ultra-bee" className="collection-card">
             <Image
               src="/images/baja-headlight.jpeg"
               alt="Ultra Bee Parts"
@@ -52,7 +65,7 @@ export default async function Home() {
               <span>{ultraBeeProducts.length} Products</span>
             </div>
           </Link>
-          <Link href="#light-bee" className="collection-card">
+          <Link href="/catalog?category=light-bee" className="collection-card">
             <Image
               src="/images/motor-guard.jpeg"
               alt="Light Bee Parts"
@@ -66,6 +79,23 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Fat Tire Parts */}
+      {fatTireProducts.length > 0 && (
+        <section id="fat-tire" className="products-section">
+          <div className="section-header">
+            <h2 className="section-title">Fat Tire Parts</h2>
+            <Link href="/catalog?category=fat-tire" className="section-link">
+              View all →
+            </Link>
+          </div>
+          <div className="products-grid">
+            {fatTireProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Ultra Bee Parts */}
       <section id="ultra-bee" className="products-section">

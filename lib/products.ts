@@ -14,7 +14,7 @@ export async function getProducts(): Promise<Product[]> {
   return data || []
 }
 
-export async function getProductsByCategory(category: 'ultra-bee' | 'light-bee'): Promise<Product[]> {
+export async function getProductsByCategory(category: 'ultra-bee' | 'light-bee' | 'fat-tire'): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*')
