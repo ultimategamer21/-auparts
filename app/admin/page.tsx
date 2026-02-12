@@ -263,8 +263,10 @@ export default function AdminDashboard() {
 
   const getImageSrc = (image: string) => {
     if (!image) return ''
-    if (image.startsWith('http')) return image
-    return `/images/${image}`
+    // Get first image if comma-separated
+    const firstImage = image.split(',')[0].trim()
+    if (firstImage.startsWith('http')) return firstImage
+    return `/images/${firstImage}`
   }
 
   // Calculate stats
