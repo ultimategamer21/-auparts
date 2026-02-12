@@ -1,14 +1,23 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import ProductCard from '@/components/ProductCard'
-import { getProductsByCategory } from '@/lib/products'
+import { getProductsByCategory, getFeaturedProducts } from '@/lib/products'
 
 export const revalidate = 60 // Revalidate every 60 seconds
+
+// Featured products to show on homepage
+const FEATURED_PRODUCT_NAMES = [
+  'Ultra Bee Supermoto Wheel Set',
+  'Light Bee Supermoto Wheel Set',
+  'ODI Number Plate',
+  'Motocutz Plate',
+]
 
 export default async function Home() {
   const ultraBeeProducts = await getProductsByCategory('ultra-bee')
   const lightBeeProducts = await getProductsByCategory('light-bee')
   const fatTireProducts = await getProductsByCategory('fat-tire')
+  const featuredProducts = await getFeaturedProducts(FEATURED_PRODUCT_NAMES)
 
   return (
     <main>
@@ -80,48 +89,16 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Fat Tire Parts */}
-      {fatTireProducts.length > 0 && (
-        <section id="fat-tire" className="products-section">
-          <div className="section-header">
-            <h2 className="section-title">Fat Tire Parts</h2>
-            <Link href="/catalog?category=fat-tire" className="section-link">
-              View all →
-            </Link>
-          </div>
-          <div className="products-grid">
-            {fatTireProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Ultra Bee Parts */}
-      <section id="ultra-bee" className="products-section">
+      {/* Featured Products */}
+      <section id="featured" className="products-section">
         <div className="section-header">
-          <h2 className="section-title">Ultra Bee Parts</h2>
-          <Link href="/catalog?category=ultra-bee" className="section-link">
+          <h2 className="section-title">Featured Products</h2>
+          <Link href="/catalog" className="section-link">
             View all →
           </Link>
         </div>
         <div className="products-grid">
-          {ultraBeeProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      {/* Light Bee Parts */}
-      <section id="light-bee" className="products-section">
-        <div className="section-header">
-          <h2 className="section-title">Light Bee Parts</h2>
-          <Link href="/catalog?category=light-bee" className="section-link">
-            View all →
-          </Link>
-        </div>
-        <div className="products-grid">
-          {lightBeeProducts.map((product) => (
+          {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

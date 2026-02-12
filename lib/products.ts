@@ -43,3 +43,29 @@ export async function getProductById(id: string): Promise<Product | null> {
 
   return data
 }
+
+export async function getFeaturedProducts(names: string[]): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+
+  if (error) {
+    console.error('Error fetching products:', error)
+    return []
+  }
+
+  // Filter and sort by the order of names provided
+  const products = data || []
+  const featured: Product[] = []
+
+  for (const name of names) {
+    const product = products.find(p =>
+      p.name.toLowerCase().includes(name.toLowerCase())
+    )
+    if (product) {
+      featured.push(product)
+    }
+  }
+
+  return featured
+}
