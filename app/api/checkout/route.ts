@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
     const sessionParams: Record<string, unknown> = {
       'payment_method_types': ['card'],
       'mode': 'payment',
+      'allow_promotion_codes': 'true',
       'success_url': `${process.env.NEXT_PUBLIC_BASE_URL || 'https://auparts.vercel.app'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       'cancel_url': `${process.env.NEXT_PUBLIC_BASE_URL || 'https://auparts.vercel.app'}`,
       'shipping_address_collection': {
