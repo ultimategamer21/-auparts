@@ -24,18 +24,6 @@ async function getShippingSettings() {
   }
 }
 
-async function stripeRequest(endpoint: string, body: Record<string, unknown>) {
-  const response = await fetch(`https://api.stripe.com/v1/${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams(flattenObject(body)).toString(),
-  })
-  return response.json()
-}
-
 function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
   const result: Record<string, string> = {}
   for (const [key, value] of Object.entries(obj)) {
@@ -55,6 +43,18 @@ function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string
     }
   }
   return result
+}
+
+async function stripeRequest(endpoint: string, body: Record<string, unknown>) {
+  const response = await fetch(`https://api.stripe.com/v1/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(flattenObject(body)).toString(),
+  })
+  return response.json()
 }
 
 export async function POST(request: NextRequest) {

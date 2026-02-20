@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 
 type Product = {
   id: string
@@ -262,9 +262,10 @@ export default function AdminDashboard() {
   }
 
   const getImageSrc = (image: string) => {
-    if (!image) return ''
+    if (!image) return null
     // Get first image if comma-separated
     const firstImage = image.split(',')[0].trim()
+    if (!firstImage) return null
     if (firstImage.startsWith('http')) return firstImage
     return `/images/${firstImage}`
   }
@@ -379,6 +380,29 @@ export default function AdminDashboard() {
         </p>
       </div>
 
+      {/* Promo Codes - Link to Stripe */}
+      <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+      }}>
+        <h2 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.25rem' }}>Promo Codes</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 1rem', fontSize: '0.875rem' }}>
+          Promo codes are managed in your Stripe Dashboard. Customers can enter codes at checkout.
+        </p>
+        <a
+          href="https://dashboard.stripe.com/coupons"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary"
+          style={{ display: 'inline-block', textDecoration: 'none' }}
+        >
+          Manage in Stripe Dashboard
+        </a>
+      </div>
+
       {/* Collections Management */}
       <div style={{
         background: 'rgba(255,255,255,0.05)',
@@ -415,15 +439,14 @@ export default function AdminDashboard() {
               }}
             >
               <div style={{ width: '60px', height: '60px', position: 'relative', borderRadius: '6px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
-                {collection.image && (
-                  <Image
-                    src={getImageSrc(collection.image)}
-                    alt={collection.name}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    unoptimized={collection.image.startsWith('http')}
-                  />
-                )}
+                <SafeImage
+                  src={getImageSrc(collection.image) || ''}
+                  alt={collection.name}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  unoptimized={collection.image?.startsWith('http')}
+                  fallbackText="No img"
+                />
               </div>
               <div>
                 <h4 style={{ margin: 0 }}>{collection.name}</h4>
@@ -514,15 +537,13 @@ export default function AdminDashboard() {
             }}
           >
             <div style={{ width: '80px', height: '80px', position: 'relative', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
-              {product.image && (
-                <Image
-                  src={getImageSrc(product.image)}
-                  alt={product.name}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                  unoptimized={product.image.startsWith('http')}
-                />
-              )}
+              <SafeImage
+                src={getImageSrc(product.image) || ''}
+                alt={product.name}
+                fill
+                style={{ objectFit: 'cover' }}
+                unoptimized={product.image?.startsWith('http')}
+              />
             </div>
             <div>
               <h3 style={{ margin: 0 }}>{product.name}</h3>
@@ -659,13 +680,13 @@ export default function AdminDashboard() {
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Image</label>
                 {editing.image && (
-                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <Image
-                      src={getImageSrc(editing.image)}
+                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                    <SafeImage
+                      src={getImageSrc(editing.image) || ''}
                       alt="Product"
                       fill
                       style={{ objectFit: 'cover' }}
-                      unoptimized={editing.image.startsWith('http')}
+                      unoptimized={editing.image?.startsWith('http')}
                     />
                   </div>
                 )}
@@ -821,13 +842,13 @@ export default function AdminDashboard() {
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Image</label>
                 {editingCollection.image && (
-                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <Image
-                      src={getImageSrc(editingCollection.image)}
+                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                    <SafeImage
+                      src={getImageSrc(editingCollection.image) || ''}
                       alt="Collection"
                       fill
                       style={{ objectFit: 'cover' }}
-                      unoptimized={editingCollection.image.startsWith('http')}
+                      unoptimized={editingCollection.image?.startsWith('http')}
                     />
                   </div>
                 )}

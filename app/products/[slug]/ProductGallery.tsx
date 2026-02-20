@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 
 function getImageSrc(image: string): string {
-  if (!image) return '/images/placeholder.jpeg'
+  if (!image) return ''
   if (image.startsWith('http')) return image
   return `/images/${image}`
 }
@@ -32,14 +32,20 @@ export default function ProductGallery({
         background: 'rgba(255,255,255,0.05)',
         marginBottom: images.length > 1 ? '1rem' : 0,
       }}>
-        <Image
-          src={getImageSrc(selectedImage)}
-          alt={productName}
-          fill
-          style={{ objectFit: 'cover' }}
-          priority
-          unoptimized={selectedImage.startsWith('http')}
-        />
+        {getImageSrc(selectedImage) ? (
+          <Image
+            src={getImageSrc(selectedImage)}
+            alt={productName}
+            fill
+            style={{ objectFit: 'cover' }}
+            priority
+            unoptimized={selectedImage?.startsWith('http')}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)' }}>
+            No image
+          </div>
+        )}
         {badge && (
           <span style={{
             position: 'absolute',

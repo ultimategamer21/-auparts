@@ -69,3 +69,25 @@ export async function getFeaturedProducts(names: string[]): Promise<Product[]> {
 
   return featured
 }
+
+export type Collection = {
+  id: string
+  name: string
+  slug: string
+  image: string
+  sort_order: number
+}
+
+export async function getCollections(): Promise<Collection[]> {
+  const { data, error } = await supabase
+    .from('collections')
+    .select('*')
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching collections:', error)
+    return []
+  }
+
+  return data || []
+}

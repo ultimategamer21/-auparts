@@ -12,7 +12,7 @@ function formatPrice(cents: number): string {
 }
 
 function getImageSrc(image: string): string {
-  if (!image) return '/images/placeholder.jpeg'
+  if (!image) return ''
   if (image.startsWith('http')) return image
   return `/images/${image}`
 }
@@ -183,14 +183,20 @@ export default async function ProductPage({
                     transition: 'transform 0.2s',
                   }}
                 >
-                  <div style={{ position: 'relative', aspectRatio: '1' }}>
-                    <Image
-                      src={getImageSrc(parseImages(item.image)[0] || item.image)}
-                      alt={item.name}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      unoptimized={item.image?.startsWith('http')}
-                    />
+                  <div style={{ position: 'relative', aspectRatio: '1', background: 'rgba(255,255,255,0.05)' }}>
+                    {getImageSrc(parseImages(item.image)[0] || item.image) ? (
+                      <Image
+                        src={getImageSrc(parseImages(item.image)[0] || item.image)}
+                        alt={item.name}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        unoptimized={item.image?.startsWith('http')}
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>
+                        No image
+                      </div>
+                    )}
                   </div>
                   <div style={{ padding: '1rem' }}>
                     <h3 style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>{item.name}</h3>

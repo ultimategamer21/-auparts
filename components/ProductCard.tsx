@@ -11,7 +11,7 @@ function formatPrice(cents: number): string {
 }
 
 function getImageSrc(image: string): string {
-  if (!image) return '/images/placeholder.jpeg'
+  if (!image) return ''
   if (image.startsWith('http')) return image
   return `/images/${image}`
 }
@@ -40,14 +40,20 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/products/${product.slug}`} className="product-card">
       <div className="product-image-wrapper">
-        <Image
-          src={imageSrc}
-          alt={product.name}
-          width={300}
-          height={300}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          unoptimized={imageSrc.startsWith('http')}
-        />
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={product.name}
+            width={300}
+            height={300}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            unoptimized={imageSrc.startsWith('http')}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)' }}>
+            No image
+          </div>
+        )}
         {product.badge && (
           <span className={`badge ${product.badge}`}>{product.badge}</span>
         )}

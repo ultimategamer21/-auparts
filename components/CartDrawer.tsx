@@ -8,9 +8,11 @@ function formatPrice(cents: number): string {
 }
 
 function getImageSrc(image: string): string {
-  if (!image) return '/images/placeholder.jpeg'
-  if (image.startsWith('http')) return image
-  return `/images/${image}`
+  if (!image) return ''
+  // Get first image if comma-separated
+  const firstImage = image.split(',')[0].trim()
+  if (firstImage.startsWith('http')) return firstImage
+  return `/images/${firstImage}`
 }
 
 export default function CartDrawer() {
@@ -78,16 +80,24 @@ export default function CartDrawer() {
               <p>Your cart is empty</p>
             </div>
           ) : (
-            items.map((item) => (
+            items.map((item) => {
+              const imgSrc = getImageSrc(item.product.image)
+              return (
               <div key={item.product.id} className="cart-item">
-                <Image
-                  src={getImageSrc(item.product.image)}
-                  alt={item.product.name}
-                  width={80}
-                  height={80}
-                  className="cart-item-image"
-                  unoptimized={item.product.image?.startsWith('http')}
-                />
+                {imgSrc ? (
+                  <Image
+                    src={imgSrc}
+                    alt={item.product.name}
+                    width={80}
+                    height={80}
+                    className="cart-item-image"
+                    unoptimized={imgSrc.startsWith('http')}
+                  />
+                ) : (
+                  <div className="cart-item-image" style={{ width: 80, height: 80, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6rem' }}>No img</span>
+                  </div>
+                )}
                 <div className="cart-item-details">
                   <div className="cart-item-name">{item.product.name}</div>
                   <div className="cart-item-price">
@@ -118,7 +128,7 @@ export default function CartDrawer() {
                   </button>
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
 
@@ -136,6 +146,9 @@ export default function CartDrawer() {
               <span>Total</span>
               <span>{formatPrice(total)}</span>
             </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', margin: '0.5rem 0 1rem', textAlign: 'center' }}>
+              Have a promo code? Enter it at checkout.
+            </p>
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCheckout}>
               Checkout
             </button>
