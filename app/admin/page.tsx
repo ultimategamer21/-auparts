@@ -286,7 +286,7 @@ export default function AdminDashboard() {
     return `$${(cents / 100).toFixed(2)}`
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, addToExisting = false) => {
     const file = e.target.files?.[0]
     if (!file || !editing) return
 
@@ -302,7 +302,13 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         const { url } = await res.json()
-        setEditing({ ...editing, image: url })
+        if (addToExisting && editing.image) {
+          // Add to existing images
+          setEditing({ ...editing, image: `${editing.image}, ${url}` })
+        } else {
+          // Replace all images
+          setEditing({ ...editing, image: url })
+        }
       } else {
         const error = await res.json()
         alert(error.error || 'Failed to upload image')
@@ -311,6 +317,20 @@ export default function AdminDashboard() {
       alert('Failed to upload image')
     }
     setUploading(false)
+    // Reset the input so the same file can be selected again
+    e.target.value = ''
+  }
+
+  const removeImage = (indexToRemove: number) => {
+    if (!editing) return
+    const images = editing.image.split(',').map(img => img.trim()).filter(img => img)
+    const newImages = images.filter((_, index) => index !== indexToRemove)
+    setEditing({ ...editing, image: newImages.join(', ') })
+  }
+
+  const getImagesList = (imageField: string): string[] => {
+    if (!imageField) return []
+    return imageField.split(',').map(img => img.trim()).filter(img => img)
   }
 
   const getImageSrc = (image: string) => {
@@ -966,42 +986,115 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Image</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Images</label>
+                {/* Show all images in a grid */}
                 {editing.image && (
-                  <div style={{ marginBottom: '0.5rem', position: 'relative', width: '100px', height: '100px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
-                    <SafeImage
-                      src={getImageSrc(editing.image) || ''}
-                      alt="Product"
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      unoptimized={editing.image?.startsWith('http')}
-                    />
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                    {getImagesList(editing.image).map((img, index) => (
+                      <div key={index} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                        <div style={{ width: '100%', height: '100%', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                          <SafeImage
+                            src={getImageSrc(img) || ''}
+                            alt={`Product ${index + 1}`}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            unoptimized={img?.startsWith('http')}
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeImage(index)}
+                          style={{
+                            position: 'absolute',
+                            top: '-6px',
+                            right: '-6px',
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '50%',
+                            background: '#ef4444',
+                            border: 'none',
+                            color: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                          }}
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                        {index === 0 && (
+                          <span style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            left: '4px',
+                            background: 'rgba(0,0,0,0.7)',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            color: 'white',
+                          }}>
+                            Main
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    {/* Add more button */}
+                    <label
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '8px',
+                        background: 'rgba(255,255,255,0.1)',
+                        border: '2px dashed rgba(255,255,255,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: uploading ? 'wait' : 'pointer',
+                        fontSize: '2rem',
+                        color: 'rgba(255,255,255,0.5)',
+                      }}
+                      title="Add another image"
+                    >
+                      +
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, true)}
+                        disabled={uploading}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
                   </div>
                 )}
-                <label
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '1rem',
-                    background: '#3b82f6',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: 'white',
-                    cursor: uploading ? 'wait' : 'pointer',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                  }}
-                >
-                  {uploading ? 'Uploading...' : editing.image ? 'Change Image' : 'Upload Image'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={uploading}
-                    style={{ display: 'none' }}
-                  />
-                </label>
+                {/* Upload button when no images */}
+                {!editing.image && (
+                  <label
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '1rem',
+                      background: '#3b82f6',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: 'white',
+                      cursor: uploading ? 'wait' : 'pointer',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                    }}
+                  >
+                    {uploading ? 'Uploading...' : 'Upload Image'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, false)}
+                      disabled={uploading}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
                 {uploading && (
                   <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                     <div style={{ width: '50%', height: '4px', background: '#3b82f6', animation: 'pulse 1s infinite' }} />
