@@ -13,8 +13,9 @@ export type Product = {
   price: number
   compare_price: number | null
   image: string
-  category: 'ultra-bee' | 'light-bee'
+  category: 'ultra-bee' | 'light-bee' | 'fat-tire'
   in_stock: boolean
   badge: 'new' | 'sale' | null
+  preorder: boolean
   created_at: string
 }

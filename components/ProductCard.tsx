@@ -57,15 +57,23 @@ export default function ProductCard({ product }: { product: Product }) {
         {product.badge && (
           <span className={`badge ${product.badge}`}>{product.badge}</span>
         )}
+        {product.preorder && (
+          <span className="badge" style={{ background: '#8b5cf6' }}>Pre-order</span>
+        )}
       </div>
       <div className="product-info">
         <h3>{product.name}</h3>
-        {product.in_stock && (
+        {product.preorder ? (
+          <div className="stock-indicator" style={{ color: '#8b5cf6' }}>
+            <span className="stock-dot" style={{ background: '#8b5cf6' }}></span>
+            <span>Pre-order</span>
+          </div>
+        ) : product.in_stock ? (
           <div className="stock-indicator">
             <span className="stock-dot"></span>
             <span>In stock</span>
           </div>
-        )}
+        ) : null}
         <div className="product-pricing">
           <span className={`price ${product.badge === 'sale' ? 'price-sale' : ''}`}>
             {formatPrice(product.price)}
@@ -79,8 +87,9 @@ export default function ProductCard({ product }: { product: Product }) {
         <button
           className={`btn btn-add ${added ? 'added' : ''}`}
           onClick={handleAdd}
+          style={product.preorder ? { background: '#8b5cf6' } : undefined}
         >
-          {added ? 'Added!' : 'Add'}
+          {added ? 'Added!' : product.preorder ? 'Pre-order' : 'Add'}
         </button>
       </div>
     </Link>

@@ -15,6 +15,21 @@ type Product = {
   category: 'ultra-bee' | 'light-bee' | 'fat-tire'
   in_stock: boolean
   badge: 'new' | 'sale' | null
+  preorder: boolean
+}
+
+type Order = {
+  id: string
+  stripe_session_id: string
+  customer_email: string
+  customer_name: string
+  shipping_address: string
+  items: string
+  total: number
+  status: 'pending' | 'processing' | 'shipped' | 'delivered'
+  tracking_number: string | null
+  tracking_url: string | null
+  created_at: string
 }
 
 const emptyProduct = {
@@ -27,6 +42,7 @@ const emptyProduct = {
   category: 'ultra-bee' as const,
   in_stock: true,
   badge: null as 'new' | 'sale' | null,
+  preorder: false,
 }
 
 type ShippingSettings = {
@@ -52,9 +68,11 @@ const emptyCollection = {
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | null>(null)
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null)
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [isNewCollection, setIsNewCollection] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -65,12 +83,14 @@ export default function AdminDashboard() {
     free_shipping_threshold: 10000,
   })
   const [savingShipping, setSavingShipping] = useState(false)
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products')
   const router = useRouter()
 
   useEffect(() => {
     fetchProducts()
     fetchCollections()
     fetchShippingSettings()
+    fetchOrders()
   }, [])
 
   const fetchProducts = async () => {
@@ -88,6 +108,38 @@ export default function AdminDashboard() {
       const data = await res.json()
       setCollections(data)
     }
+  }
+
+  const fetchOrders = async () => {
+    const res = await fetch('/api/admin/orders')
+    if (res.ok) {
+      const data = await res.json()
+      setOrders(data)
+    }
+  }
+
+  const handleSaveOrder = async () => {
+    if (!editingOrder) return
+    setSaving(true)
+
+    const res = await fetch(`/api/admin/orders/${editingOrder.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: editingOrder.status,
+        tracking_number: editingOrder.tracking_number,
+        tracking_url: editingOrder.tracking_url,
+      }),
+    })
+
+    if (res.ok) {
+      await fetchOrders()
+      setEditingOrder(null)
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update order')
+    }
+    setSaving(false)
   }
 
   const handleSaveCollection = async () => {
@@ -493,18 +545,39 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Product Management</h1>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setEditing(emptyProduct as Product)
-              setIsNew(true)
-            }}
-          >
-            + Add Product
-          </button>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+        <button
+          onClick={() => setActiveTab('products')}
+          style={{
+            background: activeTab === 'products' ? 'rgba(255,255,255,0.1)' : 'transparent',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '8px',
+            color: activeTab === 'products' ? 'white' : 'rgba(255,255,255,0.5)',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: activeTab === 'products' ? 'bold' : 'normal',
+          }}
+        >
+          Products
+        </button>
+        <button
+          onClick={() => setActiveTab('orders')}
+          style={{
+            background: activeTab === 'orders' ? 'rgba(255,255,255,0.1)' : 'transparent',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '8px',
+            color: activeTab === 'orders' ? 'white' : 'rgba(255,255,255,0.5)',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: activeTab === 'orders' ? 'bold' : 'normal',
+          }}
+        >
+          Orders {orders.length > 0 && `(${orders.length})`}
+        </button>
+        <div style={{ marginLeft: 'auto' }}>
           <button
             onClick={handleLogout}
             style={{
@@ -521,7 +594,123 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Product List */}
+      {/* Orders Tab */}
+      {activeTab === 'orders' && (
+        <div>
+          <h2 style={{ marginBottom: '1.5rem' }}>Order Management</h2>
+          {orders.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '2rem' }}>
+              No orders yet. Orders will appear here after customers complete checkout.
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                    <div>
+                      <h3 style={{ margin: 0 }}>{order.customer_name || 'Customer'}</h3>
+                      <p style={{ margin: '0.25rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                        {order.customer_email}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase',
+                        background: order.status === 'delivered' ? 'rgba(34, 197, 94, 0.2)' :
+                                   order.status === 'shipped' ? 'rgba(59, 130, 246, 0.2)' :
+                                   order.status === 'processing' ? 'rgba(251, 191, 36, 0.2)' :
+                                   'rgba(255,255,255,0.1)',
+                        color: order.status === 'delivered' ? '#22c55e' :
+                               order.status === 'shipped' ? '#3b82f6' :
+                               order.status === 'processing' ? '#fbbf24' :
+                               'rgba(255,255,255,0.7)',
+                      }}>
+                        {order.status}
+                      </span>
+                      <p style={{ margin: '0.5rem 0 0', fontWeight: 'bold' }}>
+                        ${(order.total / 100).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', margin: '0 0 1rem' }}>
+                    {order.shipping_address}
+                  </p>
+
+                  {order.tracking_number && (
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                      <p style={{ margin: 0, fontSize: '0.875rem' }}>
+                        <strong>Tracking:</strong> {order.tracking_number}
+                        {order.tracking_url && (
+                          <a
+                            href={order.tracking_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ marginLeft: '0.5rem', color: '#3b82f6' }}
+                          >
+                            Track Package →
+                          </a>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => setEditingOrder(order)}
+                      style={{
+                        background: 'rgba(255,255,255,0.1)',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      Update Status / Add Tracking
+                    </button>
+                  </div>
+
+                  <p style={{ margin: '1rem 0 0', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
+                    Order placed: {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Products Tab */}
+      {activeTab === 'products' && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2>Product Management</h2>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setEditing(emptyProduct as Product)
+                setIsNew(true)
+              }}
+            >
+              + Add Product
+            </button>
+          </div>
+
+          {/* Product List */}
       <div style={{ display: 'grid', gap: '1rem' }}>
         {products.map((product) => (
           <div
@@ -597,10 +786,109 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {products.length === 0 && (
-        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: '3rem' }}>
-          No products yet. Click &quot;Add Product&quot; to create one.
-        </p>
+          {products.length === 0 && (
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: '3rem' }}>
+              No products yet. Click &quot;Add Product&quot; to create one.
+            </p>
+          )}
+        </>
+      )}
+
+      {/* Order Edit Modal */}
+      {editingOrder && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            zIndex: 1000,
+          }}
+          onClick={() => setEditingOrder(null)}
+        >
+          <div
+            style={{
+              background: '#111',
+              borderRadius: '12px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '450px',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0 }}>Update Order</h2>
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem' }}>
+              {editingOrder.customer_name} - {editingOrder.customer_email}
+            </p>
+
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Status</label>
+                <select
+                  value={editingOrder.status}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, status: e.target.value as Order['status'] })}
+                  style={inputStyle}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Tracking Number</label>
+                <input
+                  type="text"
+                  value={editingOrder.tracking_number || ''}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, tracking_number: e.target.value || null })}
+                  placeholder="e.g. 1Z999AA10123456784"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Tracking URL</label>
+                <input
+                  type="text"
+                  value={editingOrder.tracking_url || ''}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, tracking_url: e.target.value || null })}
+                  placeholder="e.g. https://auspost.com.au/track/..."
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveOrder}
+                  disabled={saving}
+                  style={{ flex: 1 }}
+                >
+                  {saving ? 'Saving...' : 'Save Order'}
+                </button>
+                <button
+                  onClick={() => setEditingOrder(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Edit Modal */}
@@ -735,7 +1023,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div>
+              <div style={{ display: 'flex', gap: '2rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
@@ -743,6 +1031,14 @@ export default function AdminDashboard() {
                     onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })}
                   />
                   In Stock
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.preorder || false}
+                    onChange={(e) => setEditing({ ...editing, preorder: e.target.checked })}
+                  />
+                  Pre-order
                 </label>
               </div>
 

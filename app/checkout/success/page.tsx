@@ -1,14 +1,29 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useCart } from '@/components/CartProvider'
 
 export default function CheckoutSuccess() {
   const { clearCart } = useCart()
+  const searchParams = useSearchParams()
+  const [orderSaved, setOrderSaved] = useState(false)
 
   useEffect(() => {
     clearCart()
-  }, [clearCart])
+
+    // Save order to database
+    const sessionId = searchParams.get('session_id')
+    if (sessionId && !orderSaved) {
+      fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+      })
+        .then(() => setOrderSaved(true))
+        .catch(console.error)
+    }
+  }, [clearCart, searchParams, orderSaved])
 
   return (
     <main style={{
