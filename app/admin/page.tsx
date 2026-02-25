@@ -1068,33 +1068,31 @@ export default function AdminDashboard() {
                     </label>
                   </div>
                 )}
-                {/* Upload button when no images */}
-                {!editing.image && (
-                  <label
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '1rem',
-                      background: '#3b82f6',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: 'white',
-                      cursor: uploading ? 'wait' : 'pointer',
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      fontSize: '1rem',
-                    }}
-                  >
-                    {uploading ? 'Uploading...' : 'Upload Image'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, false)}
-                      disabled={uploading}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                )}
+                {/* Blue upload button */}
+                <label
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '1rem',
+                    background: '#3b82f6',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: uploading ? 'wait' : 'pointer',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                  }}
+                >
+                  {uploading ? 'Uploading...' : editing.image ? 'Add Image' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, !!editing.image)}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
                 {uploading && (
                   <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                     <div style={{ width: '50%', height: '4px', background: '#3b82f6', animation: 'pulse 1s infinite' }} />
