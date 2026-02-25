@@ -976,8 +976,9 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     step="0.01"
-                    value={editing.price}
+                    value={editing.price || ''}
                     onChange={(e) => setEditing({ ...editing, price: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
                     style={inputStyle}
                   />
                 </div>
