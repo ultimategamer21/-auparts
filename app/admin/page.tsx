@@ -978,22 +978,35 @@ export default function AdminDashboard() {
                     />
                   </div>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
+                <label
                   style={{
+                    display: 'block',
                     width: '100%',
-                    padding: '0.75rem',
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '1rem',
+                    background: '#3b82f6',
+                    border: 'none',
                     borderRadius: '8px',
                     color: 'white',
-                    cursor: 'pointer',
+                    cursor: uploading ? 'wait' : 'pointer',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
                   }}
-                />
-                {uploading && <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)' }}>Uploading...</p>}
+                >
+                  {uploading ? 'Uploading...' : editing.image ? 'Change Image' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {uploading && (
+                  <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '50%', height: '4px', background: '#3b82f6', animation: 'pulse 1s infinite' }} />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -1148,22 +1161,35 @@ export default function AdminDashboard() {
                     />
                   </div>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCollectionImageUpload}
-                  disabled={uploadingCollection}
+                <label
                   style={{
+                    display: 'block',
                     width: '100%',
-                    padding: '0.75rem',
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '1rem',
+                    background: '#3b82f6',
+                    border: 'none',
                     borderRadius: '8px',
                     color: 'white',
-                    cursor: 'pointer',
+                    cursor: uploadingCollection ? 'wait' : 'pointer',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
                   }}
-                />
-                {uploadingCollection && <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)' }}>Uploading...</p>}
+                >
+                  {uploadingCollection ? 'Uploading...' : editingCollection.image ? 'Change Image' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCollectionImageUpload}
+                    disabled={uploadingCollection}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {uploadingCollection && (
+                  <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '50%', height: '4px', background: '#3b82f6', animation: 'pulse 1s infinite' }} />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

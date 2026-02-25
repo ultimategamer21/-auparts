@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCart } from '@/components/CartProvider'
 
-export default function CheckoutSuccess() {
+function SuccessContent() {
   const { clearCart } = useCart()
   const searchParams = useSearchParams()
   const [orderSaved, setOrderSaved] = useState(false)
@@ -26,6 +26,29 @@ export default function CheckoutSuccess() {
   }, [clearCart, searchParams, orderSaved])
 
   return (
+    <div>
+      <div style={{ fontSize: '4rem', marginBottom: '1rem', color: '#22c55e' }}>✓</div>
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Thank you for your order!</h1>
+      <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>
+        We&apos;ve received your order and will ship it soon.<br />
+        You&apos;ll receive an email confirmation shortly.
+      </p>
+      <a
+        href="/"
+        className="btn btn-primary"
+        style={{
+          display: 'inline-block',
+          textDecoration: 'none',
+        }}
+      >
+        Continue Shopping
+      </a>
+    </div>
+  )
+}
+
+export default function CheckoutSuccess() {
+  return (
     <main style={{
       minHeight: '100vh',
       display: 'flex',
@@ -37,24 +60,9 @@ export default function CheckoutSuccess() {
       position: 'relative',
       zIndex: 10,
     }}>
-      <div>
-        <div style={{ fontSize: '4rem', marginBottom: '1rem', color: '#22c55e' }}>✓</div>
-        <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Thank you for your order!</h1>
-        <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>
-          We&apos;ve received your order and will ship it soon.<br />
-          You&apos;ll receive an email confirmation shortly.
-        </p>
-        <a
-          href="/"
-          className="btn btn-primary"
-          style={{
-            display: 'inline-block',
-            textDecoration: 'none',
-          }}
-        >
-          Continue Shopping
-        </a>
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SuccessContent />
+      </Suspense>
     </main>
   )
 }
