@@ -303,10 +303,19 @@ export default function AdminDashboard() {
       if (res.ok) {
         const { url } = await res.json()
         if (addToExisting && editing.image) {
-          // Add to existing images
+          // Add to existing images (append at the end)
           setEditing({ ...editing, image: `${editing.image}, ${url}` })
+        } else if (editing.image && !addToExisting) {
+          // Replace main image but keep other images
+          const images = editing.image.split(',').map(img => img.trim()).filter(img => img)
+          if (images.length > 1) {
+            images[0] = url
+            setEditing({ ...editing, image: images.join(', ') })
+          } else {
+            setEditing({ ...editing, image: url })
+          }
         } else {
-          // Replace all images
+          // No existing images, just set it
           setEditing({ ...editing, image: url })
         }
       } else {
@@ -1068,7 +1077,7 @@ export default function AdminDashboard() {
                     </label>
                   </div>
                 )}
-                {/* Blue upload button */}
+                {/* Blue upload button - always sets/replaces main image */}
                 <label
                   style={{
                     display: 'block',
@@ -1084,11 +1093,11 @@ export default function AdminDashboard() {
                     fontSize: '1rem',
                   }}
                 >
-                  {uploading ? 'Uploading...' : editing.image ? 'Add Image' : 'Upload Image'}
+                  {uploading ? 'Uploading...' : editing.image ? 'Change Main Image' : 'Upload Image'}
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageUpload(e, !!editing.image)}
+                    onChange={(e) => handleImageUpload(e, false)}
                     disabled={uploading}
                     style={{ display: 'none' }}
                   />
