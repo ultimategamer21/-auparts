@@ -15,6 +15,10 @@ async function isAuthenticated(): Promise<boolean> {
 }
 
 export async function GET() {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { data, error } = await supabase
     .from('products')
     .select('*')
