@@ -66,7 +66,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { items } = await request.json() as { items: CartItem[] }
+    const { items, promoCode } = await request.json() as {
+      items: CartItem[],
+      promoCode?: { code: string, discountType: 'percent' | 'fixed', discountValue: number } | null
+    }
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'No items in cart' }, { status: 400 })
@@ -101,6 +104,31 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity,
     }))
 
+    // Calculate discount if promo code applied
+    let discountAmount = 0
+    if (promoCode) {
+      if (promoCode.discountType === 'percent') {
+        discountAmount = Math.round(subtotal * (promoCode.discountValue / 100))
+      } else {
+        discountAmount = Math.min(promoCode.discountValue, subtotal)
+      }
+    }
+
+    // Add discount as negative line item if applicable
+    if (discountAmount > 0 && promoCode) {
+      lineItems.push({
+        price_data: {
+          currency: 'aud',
+          product_data: {
+            name: `Discount (${promoCode.code})`,
+            images: [],
+          },
+          unit_amount: -discountAmount,
+        },
+        quantity: 1,
+      })
+    }
+
     // Add shipping as a line item if not free
     if (shipping > 0) {
       lineItems.push({
@@ -120,7 +148,6 @@ export async function POST(request: NextRequest) {
     const sessionParams: Record<string, unknown> = {
       'payment_method_types': ['card'],
       'mode': 'payment',
-      'allow_promotion_codes': 'true',
       'success_url': `${process.env.NEXT_PUBLIC_BASE_URL || 'https://auparts.vercel.app'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       'cancel_url': `${process.env.NEXT_PUBLIC_BASE_URL || 'https://auparts.vercel.app'}`,
       'shipping_address_collection': {

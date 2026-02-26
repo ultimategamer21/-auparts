@@ -8,6 +8,12 @@ export type CartItem = {
   quantity: number
 }
 
+type PromoDiscount = {
+  code: string
+  discountType: 'percent' | 'fixed'
+  discountValue: number // percentage or cents
+}
+
 type CartContextType = {
   items: CartItem[]
   addItem: (product: Product) => void
@@ -20,6 +26,12 @@ type CartContextType = {
   shipping: number
   total: number
   itemCount: number
+  promoDiscount: PromoDiscount | null
+  promoError: string | null
+  promoLoading: boolean
+  applyPromoCode: (code: string) => Promise<void>
+  removePromoCode: () => void
+  discountAmount: number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -30,6 +42,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [shippingRate, setShippingRate] = useState(0)
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(10000)
+  const [promoDiscount, setPromoDiscount] = useState<PromoDiscount | null>(null)
+  const [promoError, setPromoError] = useState<string | null>(null)
+  const [promoLoading, setPromoLoading] = useState(false)
 
   // Load cart from localStorage and fetch shipping settings
   useEffect(() => {
@@ -95,6 +110,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([])
+    setPromoDiscount(null)
+    setPromoError(null)
+  }
+
+  const applyPromoCode = async (code: string) => {
+    if (!code.trim()) {
+      setPromoError('Please enter a promo code')
+      return
+    }
+
+    setPromoLoading(true)
+    setPromoError(null)
+
+    try {
+      const response = await fetch('/api/promo/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.trim().toUpperCase() }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || data.error) {
+        setPromoError(data.error || 'Invalid promo code')
+        setPromoDiscount(null)
+      } else {
+        setPromoDiscount({
+          code: data.code,
+          discountType: data.discount_type,
+          discountValue: data.discount_value,
+        })
+        setPromoError(null)
+      }
+    } catch {
+      setPromoError('Failed to validate promo code')
+      setPromoDiscount(null)
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  const removePromoCode = () => {
+    setPromoDiscount(null)
+    setPromoError(null)
   }
 
   const subtotal = items.reduce(
@@ -102,8 +161,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   )
 
+  // Calculate discount amount
+  let discountAmount = 0
+  if (promoDiscount) {
+    if (promoDiscount.discountType === 'percent') {
+      discountAmount = Math.round(subtotal * (promoDiscount.discountValue / 100))
+    } else {
+      // Fixed amount (already in cents)
+      discountAmount = Math.min(promoDiscount.discountValue, subtotal)
+    }
+  }
+
   const shipping = subtotal >= freeShippingThreshold ? 0 : shippingRate
-  const total = subtotal + shipping
+  const total = subtotal - discountAmount + shipping
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
@@ -120,6 +190,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         shipping,
         total,
         itemCount,
+        promoDiscount,
+        promoError,
+        promoLoading,
+        applyPromoCode,
+        removePromoCode,
+        discountAmount,
       }}
     >
       {children}

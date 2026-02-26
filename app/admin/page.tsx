@@ -65,6 +65,27 @@ const emptyCollection = {
   sort_order: 0,
 }
 
+type PromoCode = {
+  id: string
+  code: string
+  active: boolean
+  discount_type: 'percent' | 'fixed'
+  discount_value: number
+  usage_limit: number | null
+  times_used: number
+  expires_at: string | null
+  created_at: string
+}
+
+const emptyPromoCode = {
+  code: '',
+  discount_type: 'percent' as 'percent' | 'fixed',
+  discount_value: 0,
+  usage_limit: null as number | null,
+  expires_at: '',
+  active: true,
+}
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
@@ -84,6 +105,10 @@ export default function AdminDashboard() {
   })
   const [savingShipping, setSavingShipping] = useState(false)
   const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products')
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([])
+  const [loadingPromos, setLoadingPromos] = useState(false)
+  const [editingPromo, setEditingPromo] = useState<typeof emptyPromoCode | null>(null)
+  const [savingPromo, setSavingPromo] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -91,6 +116,7 @@ export default function AdminDashboard() {
     fetchCollections()
     fetchShippingSettings()
     fetchOrders()
+    fetchPromoCodes()
   }, [])
 
   const fetchProducts = async () => {
@@ -115,6 +141,76 @@ export default function AdminDashboard() {
     if (res.ok) {
       const data = await res.json()
       setOrders(data)
+    }
+  }
+
+  const fetchPromoCodes = async () => {
+    setLoadingPromos(true)
+    const res = await fetch('/api/admin/promo')
+    if (res.ok) {
+      const data = await res.json()
+      setPromoCodes(data)
+    }
+    setLoadingPromos(false)
+  }
+
+  const handleSavePromo = async () => {
+    if (!editingPromo) return
+    setSavingPromo(true)
+
+    const payload = {
+      code: editingPromo.code,
+      discount_type: editingPromo.discount_type,
+      discount_value: editingPromo.discount_type === 'fixed'
+        ? Math.round(editingPromo.discount_value * 100) // Convert dollars to cents
+        : editingPromo.discount_value,
+      usage_limit: editingPromo.usage_limit || null,
+      expires_at: editingPromo.expires_at || null,
+      active: true,
+      times_used: 0,
+    }
+
+    const res = await fetch('/api/admin/promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (res.ok) {
+      await fetchPromoCodes()
+      setEditingPromo(null)
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to create promo code')
+    }
+    setSavingPromo(false)
+  }
+
+  const handleDeletePromo = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this promo code?')) return
+
+    const res = await fetch(`/api/admin/promo/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      await fetchPromoCodes()
+    } else {
+      alert('Failed to delete promo code')
+    }
+  }
+
+  const handleTogglePromoActive = async (promo: PromoCode) => {
+    const res = await fetch(`/api/admin/promo/${promo.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !promo.active }),
+    })
+
+    if (res.ok) {
+      await fetchPromoCodes()
+    } else {
+      alert('Failed to update promo code')
     }
   }
 
@@ -461,7 +557,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Promo Codes - Link to Stripe */}
+      {/* Promo Codes Management */}
       <div style={{
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -469,19 +565,98 @@ export default function AdminDashboard() {
         padding: '1.5rem',
         marginBottom: '2rem',
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.25rem' }}>Promo Codes</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 1rem', fontSize: '0.875rem' }}>
-          Promo codes are managed in your Stripe Dashboard. Customers can enter codes at checkout.
-        </p>
-        <a
-          href="https://dashboard.stripe.com/coupons"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary"
-          style={{ display: 'inline-block', textDecoration: 'none' }}
-        >
-          Manage in Stripe Dashboard
-        </a>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Promo Codes</h2>
+          <button
+            className="btn btn-primary"
+            onClick={() => setEditingPromo({ ...emptyPromoCode })}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+          >
+            + Add Promo Code
+          </button>
+        </div>
+
+        {loadingPromos ? (
+          <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '1rem' }}>Loading promo codes...</p>
+        ) : promoCodes.length === 0 ? (
+          <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '1rem' }}>
+            No promo codes yet. Click &quot;Add Promo Code&quot; to create one.
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            {promoCodes.map((promo) => (
+              <div
+                key={promo.id}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto auto auto',
+                  gap: '1rem',
+                  alignItems: 'center',
+                  padding: '0.75rem 1rem',
+                  background: promo.active ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                  borderRadius: '8px',
+                  opacity: promo.active ? 1 : 0.6,
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: 'bold', fontFamily: 'monospace', fontSize: '1rem' }}>{promo.code}</span>
+                    {!promo.active && (
+                      <span style={{
+                        background: 'rgba(239, 68, 68, 0.2)',
+                        color: '#ef4444',
+                        padding: '0.125rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.7rem',
+                        fontWeight: 'bold',
+                      }}>
+                        INACTIVE
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: '0.25rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>
+                    {promo.discount_type === 'percent'
+                      ? `${promo.discount_value}% off`
+                      : `$${(promo.discount_value / 100).toFixed(2)} off`}
+                    {promo.usage_limit && ` • ${promo.times_used}/${promo.usage_limit} used`}
+                    {promo.expires_at && ` • Expires ${new Date(promo.expires_at).toLocaleDateString()}`}
+                  </p>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', textAlign: 'right' }}>
+                  {promo.times_used} uses
+                </div>
+                <button
+                  onClick={() => handleTogglePromoActive(promo)}
+                  style={{
+                    background: promo.active ? 'rgba(255,255,255,0.1)' : 'rgba(34, 197, 94, 0.2)',
+                    border: 'none',
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: '6px',
+                    color: promo.active ? 'rgba(255,255,255,0.7)' : '#22c55e',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  {promo.active ? 'Disable' : 'Enable'}
+                </button>
+                <button
+                  onClick={() => handleDeletePromo(promo.id)}
+                  style={{
+                    background: 'rgba(255,100,100,0.2)',
+                    border: 'none',
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: '6px',
+                    color: '#ff6b6b',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Collections Management */}
@@ -1304,6 +1479,143 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => { setEditingCollection(null); setIsNewCollection(false) }}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Promo Code Edit Modal */}
+      {editingPromo && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            zIndex: 1000,
+          }}
+          onClick={() => setEditingPromo(null)}
+        >
+          <div
+            style={{
+              background: '#111',
+              borderRadius: '12px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '450px',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0 }}>Add Promo Code</h2>
+
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>
+                  Code
+                </label>
+                <input
+                  type="text"
+                  value={editingPromo.code}
+                  onChange={(e) => setEditingPromo({ ...editingPromo, code: e.target.value.toUpperCase() })}
+                  placeholder="e.g. SAVE20"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>
+                  Discount Type
+                </label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      checked={editingPromo.discount_type === 'percent'}
+                      onChange={() => setEditingPromo({ ...editingPromo, discount_type: 'percent' })}
+                    />
+                    Percentage
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      checked={editingPromo.discount_type === 'fixed'}
+                      onChange={() => setEditingPromo({ ...editingPromo, discount_type: 'fixed' })}
+                    />
+                    Fixed Amount
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>
+                  {editingPromo.discount_type === 'percent' ? 'Percent Off' : 'Amount Off ($)'}
+                </label>
+                <input
+                  type="number"
+                  step={editingPromo.discount_type === 'fixed' ? '0.01' : '1'}
+                  min={editingPromo.discount_type === 'fixed' ? '0.01' : '1'}
+                  max={editingPromo.discount_type === 'percent' ? '100' : undefined}
+                  value={editingPromo.discount_value || ''}
+                  onChange={(e) => setEditingPromo({ ...editingPromo, discount_value: parseFloat(e.target.value) || 0 })}
+                  placeholder={editingPromo.discount_type === 'percent' ? 'e.g. 20' : 'e.g. 10.00'}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>
+                  Usage Limit (optional)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={editingPromo.usage_limit || ''}
+                  onChange={(e) => setEditingPromo({ ...editingPromo, usage_limit: parseInt(e.target.value) || null })}
+                  placeholder="Unlimited if empty"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>
+                  Expiry Date (optional)
+                </label>
+                <input
+                  type="date"
+                  value={editingPromo.expires_at}
+                  onChange={(e) => setEditingPromo({ ...editingPromo, expires_at: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSavePromo}
+                  disabled={savingPromo || !editingPromo.code || !editingPromo.discount_value}
+                  style={{ flex: 1 }}
+                >
+                  {savingPromo ? 'Creating...' : 'Create Promo Code'}
+                </button>
+                <button
+                  onClick={() => setEditingPromo(null)}
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: 'none',
