@@ -114,19 +114,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Add discount as negative line item if applicable
+    // Apply discount by reducing line item prices proportionally
     if (discountAmount > 0 && promoCode) {
-      lineItems.push({
-        price_data: {
-          currency: 'aud',
-          product_data: {
-            name: `Discount (${promoCode.code})`,
-            images: [],
-          },
-          unit_amount: -discountAmount,
-        },
-        quantity: 1,
+      const discountRatio = discountAmount / subtotal
+      lineItems.forEach((item) => {
+        const itemDiscount = Math.round(item.price_data.unit_amount * discountRatio)
+        item.price_data.unit_amount = Math.max(1, item.price_data.unit_amount - itemDiscount)
       })
+
+      // Update product names to show discount was applied
+      lineItems[0].price_data.product_data.name = `${lineItems[0].price_data.product_data.name} (${promoCode.code} applied)`
     }
 
     // Add shipping as a line item if not free
